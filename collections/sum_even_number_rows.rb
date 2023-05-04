@@ -1,11 +1,9 @@
-def create_row(length, integer)
+def create_row(length, even_integer)
   row = []
-
   length.times do
-    row.push(integer)
-    integer += 2
+    row.push(even_integer)
+    even_integer += 2
   end
-
   row
 end  
 
@@ -15,8 +13,7 @@ def sum_last_row(selected_row)
   even_integer = 2
 
   for row_number in (1..selected_row)
-    row = create_row(row_number, even_integer)
-    rows.push(row)
+    rows << create_row(row_number, even_integer)
     even_integer = row.last + 2
   end
 
