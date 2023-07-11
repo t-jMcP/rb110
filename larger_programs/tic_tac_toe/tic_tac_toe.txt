@@ -1,0 +1,128 @@
+----
+HIGH LEVEL PSEUDOCODE
+----
+
+CASUAL:
+1. Display the initial empty 3x3 board.
+2. Ask the user to mark a square.
+3. Computer marks a square.
+4. Display the updated board state.
+5. If winner, display winner.
+6. If board is full, display tie.
+7. If neither winner nor board is full, go to #2
+8. Play again?
+9. If yes, go to #1
+10. Good bye!
+
+
+FORMAL:
+START
+PRINT "Welcome to Tik Tak Toe!"
+
+SET play_again? = true
+WHILE play_again? == true
+  SET board = [[],[],[]]
+  SET board_full? = false
+  SET winner? = false
+  WHILE board_full? == false && winner? = false
+    SUBPROCESS display_board (board)
+    SUBPROCESS mark_user_square (board)
+    SUBPROCESS mark_computer_square (board)
+
+    SET winner = SUBPROCESS check_winner
+    IF winner != 'none'
+	    SUBPROCESS display_winner (board, winner)
+    ELSE
+      SET board_full? = SUBPROCESS board_full? (board)
+      IF board_full? == true
+        SUBPROCESS display_tie
+  repeat_choice = GET "Do you want to play again? (Press 'Y' to confirm)"
+  IF repeat_choice != 'Y'
+    play_again? = false
+END
+  
+
+----
+display_board SUBPROCESS
+----
+
+CASUAL:
+1. For each array in board
+  2. For each element in the array
+    3. Print element
+  4. Add a newline  
+
+----
+mark_user_square SUBPROCESS
+----
+
+CASUAL:
+1. Get user to select square
+2. Update square with user choice
+
+
+FORMAL:
+START
+user_square = SUBPROCESS get_user_square
+SUBPROCESS update_board (board, user_square, 'U')
+END
+
+----
+get_user_square SUBPROCESS
+----
+
+CASUAL:
+1. Ask the user to select a row
+2. Reprompt until row is an integer between 1 and 3
+3. Ask the user to select a column
+4. Reprompt until column is an integer between 1 and 3
+5. If square is already marked, go back to step 1
+6. Return an array containing the row and column numbers
+
+FORMAL:
+START
+SET row = 0
+UNTIL row > 0 && < 4
+  SET row = GET "Please select a row number between 1 and 3"
+  SUBPROCESS row.to_i
+  UNLESS row > 0 && < 4
+    PRINT "That's not a valid row number. Please try again"
+
+SET column = 0
+UNTIL column > 0 && < 4
+  SET column = GET "Please select a column number between 1 and 3"
+  SUBPROCESS column.to_i
+  UNLESS column > 0 && < 4
+    PRINT "That's not a valid column number. Please try again"
+
+SET user_square = [row - 1, column - 1]
+
+----
+update_board SUBPROCESS
+----
+
+CASUAL:
+1. Set marker to the initial of the player making the choice
+2. Go to array element in board indicated by square and set it to marker
+
+
+----
+mark_computer_square SUBPROCESS
+----
+
+CASUAL:
+1. Get a random number between 0 and 3 for the row
+2. Get a random number between 0 and 3 for the column
+3. Repeat steps 1 and 2 if square is already taken
+4. Update board based on the row and column number
+
+
+----
+check_winner? SUBPROCESS
+----
+
+CASUAL:
+1. If user has won, return 'user'
+2. If computer has won, return 'computer'
+3. Else return 'none'
+
