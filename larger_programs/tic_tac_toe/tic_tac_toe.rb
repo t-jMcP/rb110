@@ -15,9 +15,7 @@ def initialise_board
   new_board
 end
 
-def play_round(board)
-  current_player = decide_turn_order
-
+def play_round(board, current_player)
   loop do
     display_board(board)
     mark_player_square(board, current_player)
@@ -99,12 +97,16 @@ def get_user_square(board)
     prompt("Please choose a square (valid options: " \
            "#{joinor(empty_squares(board))})")
 
-    square = gets.chomp.to_i
-    break if empty_squares(board).include?(square)
+    square = gets.chomp
+    break if empty_squares(board).include?(square.to_i) && valid_int?(square)
     prompt("That's not a valid option, please try again")
   end
 
-  square
+  square.to_i
+end
+
+def valid_int?(input_string)
+  input_string.to_i.to_s == input_string
 end
 
 def joinor(arr, delimiter = ', ', word = 'or')
@@ -155,6 +157,19 @@ def alternate_player(current_player)
   current_player == 'User' ? 'Computer' : 'User'
 end
 
+def check_result(board, scores)
+  if winner?(board)
+    winner = determine_winner(board)
+    prompt("#{winner} won this round!")
+    increment_scores(scores, winner)
+  else
+    prompt("This round is a tie")
+  end
+
+  prompt("Current score: User #{scores['User']} - Computer " \
+         "#{scores['Computer']}")
+end
+
 def winner?(board)
   !!determine_winner(board)
 end
@@ -185,13 +200,20 @@ def game_over?(scores)
   scores['User'] == WINNING_SCORE || scores['Computer'] == WINNING_SCORE
 end
 
-def display_final_score(scores)
+def display_final_result(scores)
   if scores['User'] == WINNING_SCORE
-    prompt("Game over. You reached five rounds first. Congratulations!")
+    prompt("Game over. You reached #{WINNING_SCORE} rounds first. " \
+           "Congratulations!")
   elsif scores['Computer'] == WINNING_SCORE
-    prompt("Game over. The computer reached five first. " \
+    prompt("Game over. The computer reached #{WINNING_SCORE} rounds first. " \
            "Better luck next time!")
   end
+end
+
+def play_again?
+  prompt("Do you want to play again? (Press 'Y' to confirm)")
+  repeat_choice = gets.chomp
+  repeat_choice.downcase.start_with?('y')
 end
 
 def reset_scores(scores)
@@ -199,7 +221,8 @@ def reset_scores(scores)
   scores['Computer'] = 0
 end
 
-prompt("Welcome to Tic Tac Toe! First to five rounds wins")
+prompt("Welcome to Tic Tac Toe! First to #{WINNING_SCORE} rounds wins")
+first_mover = decide_turn_order
 
 scores = {
   'User' => 0,
@@ -208,26 +231,18 @@ scores = {
 
 loop do
   board = initialise_board
-  play_round(board)
+  play_round(board, first_mover)
   display_board(board)
-
-  if winner?(board)
-    winner = determine_winner(board)
-    prompt("#{winner} won this round!")
-    increment_scores(scores, winner)
-  else
-    prompt("This round is a tie")
-  end
-
-  prompt("Current score: User #{scores['User']} - Computer " \
-         "#{scores['Computer']}")
+  check_result(board, scores)
 
   if game_over?(scores)
-    display_final_score(scores)
-    prompt("Do you want to play again? (Press 'Y' to confirm)")
-    repeat_choice = gets.chomp
-    break unless repeat_choice.downcase.start_with?('y')
+    display_final_result(scores)
+    break unless play_again?
+    first_mover = decide_turn_order
     reset_scores(scores)
+  else
+    first_mover = alternate_player(first_mover)
+    prompt("New round. #{first_mover} moving first")
   end
 end
 
