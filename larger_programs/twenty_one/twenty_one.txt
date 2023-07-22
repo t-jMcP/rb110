@@ -1,0 +1,91 @@
+----
+HIGH LEVEL PSEUDOCODE
+----
+
+CASUAL:
+1. Initialise deck of 52 cards
+2. Deal cards to player and dealer
+3. Player chooses to hit or stay
+4. If player chooses to hit
+  5. Deal one more card
+  6. Check if player has busted
+  7. If player has busted, dealer wins
+  8. Else go back to step 4
+9. Dealer chooses to hit or stay
+10. If dealer chooses to hit:
+  11. Deal one more card
+  12. Check if dealer has busted
+  13. If dealer has busted, player wins
+  14. Else return to step 10
+15. Compare cards and determine winner
+
+
+FORMAL:
+START
+PRINT 'Welcome to 21!'
+
+deck = SUBPROCESS initialise_deck
+player_hand, dealer_hand = SUBPROCESS deal_first_cards (deck)
+UNTIL player_choice == 'stay' OR player_bust?
+  player_choice = GET "Would you like to hit or stay?"
+  IF player_choice = 'hit'
+    player_hand << SUBPROCESS deal_new_card(deck)
+  player_bust? = SUBPROCESS bust_hand?(player_hand)
+IF player_bust?
+  PRINT "Dealer wins!"
+ELSE
+  dealer_hand_value = SUBPROCESS hand_value(dealer_hand)
+  WHILE dealer_hand_value < 17
+    dealer_hand << SUBPROCESS deal_new_card(deck)
+  dealer_bust? = SUBPROCESS check_bust(dealer_hand)
+  IF dealer_bust?
+    PRINT "Player wins!"
+  ELSE
+    SUBPROCESS determine_winner(player_hand, dealer_hand)
+END
+  
+---
+initialise_deck SUBPROCESS
+---
+
+CASUAL:
+1. Create an empty hash to represent the deck
+2. For each suit in a pack of cards
+  3. Add the cards from 2 to 10 to the hash
+  4. Add the face cards
+  5. Add the ace
+6. Return the hash
+
+
+---
+deal_first_cards SUBPROCESS
+---
+
+CASUAL:
+1. Select two random cards from the deck
+2. Remove these cards from the deck and add to a hash representing the player's hand
+3. Select two random cards from the deck
+4. Remove these cards from the deck and add to a hash representing the dealer's hand
+5. Return the player and dealer's hands
+
+
+---
+show_cards SUBPROCESS
+---
+
+1. Print the two cards in the player's hand
+2. Print one of the dealer's cards
+
+---
+calculate_hand_value SUBPROCESS
+---
+
+1. Split the hand into aces and non_aces
+2. For the non_ace cards, find the sum of their values
+3. For each card in the aces pile
+  4. If sum is greater than 10 OR this isn't the last card in the aces pile
+    5. Increase sum by 1
+  6. Else increase sum by 11
+7. Return sum
+
+
