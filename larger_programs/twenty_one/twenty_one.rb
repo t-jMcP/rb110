@@ -24,7 +24,6 @@ end
 def add_numeric_cards(suit, cards)
   (2..10).each do |num|
     cards.push({
-                 name: "#{num} of #{suit}",
                  rank: num.to_s,
                  suit: suit,
                  value: num
@@ -35,7 +34,6 @@ end
 def add_face_cards(suit, cards)
   FACE_CARDS.each do |face|
     cards.push({
-                 name: "#{face} of #{suit}",
                  rank: face,
                  suit: suit,
                  value: FACE_CARD_VALUE
@@ -45,7 +43,6 @@ end
 
 def add_ace(suit, cards)
   cards.push({
-               name: "Ace of #{suit}",
                rank: 'Ace',
                suit: suit,
                value: ACE_VALUES
@@ -62,6 +59,10 @@ def deal_cards(deck, cards_to_deal)
   cards_to_deal == 1 ? deck.pop : deck.pop(cards_to_deal)
 end
 
+def calculate_start_totals(player_hand, dealer_hand)
+  [calculate_hand_value(player_hand), calculate_hand_value(dealer_hand)]
+end
+
 def show_starting_position(player_hand, dealer_hand, player_total)
   show_all_cards(player_hand, :player)
   show_hand_value(player_total, :player)
@@ -69,10 +70,10 @@ def show_starting_position(player_hand, dealer_hand, player_total)
 end
 
 def show_all_cards(hand, owner)
-  card_names = hand.map { |card| card[:name] }
-  card_names_string = joinor(card_names)
+  cards = hand.map { |card| card[:rank] }
+  cards_string = joinor(cards)
   hand_owner = format_hand_owner(owner)
-  prompt("#{hand_owner} hand contains #{card_names_string}")
+  prompt("#{hand_owner} hand: #{cards_string}")
 end
 
 def show_hand_value(hand_value, owner)
@@ -83,26 +84,28 @@ end
 def format_hand_owner(owner)
   case owner
   when :player then "Your"
-  else "The dealer's"
+  else "Dealer's"
   end
 end
 
 def show_one_dealer_card(hand)
-  card_name = hand[0][:name]
-  prompt("The dealer has #{card_name} and an unknown card")
+  card = hand[0][:rank]
+  prompt("Dealer's hand: #{card} and an unknown card")
 end
 
 def joinor(arr, delimiter = ', ', word = 'and')
-  arr.each_with_object("") do |element, text|
-    if element == arr.last
+  text = ""
+  arr.each_with_index do |element, index|
+    if index == arr.length - 1
       last_delimiter = arr.length > 2 ? delimiter + word : " #{word}"
       text << "#{last_delimiter} "
-    elsif element != arr.first
+    elsif index != 0
       text << delimiter
     end
-
-    text << element.to_s
+    text << element
   end
+
+  text
 end
 
 def calculate_hand_value(hand)
@@ -124,6 +127,17 @@ def calculate_aces_value(ace_cards, non_ace_value)
   end
 
   ace_sum
+end
+
+def play_game(deck, player_hand, player_total, dealer_hand, dealer_total)
+  player_total = player_turn(deck, player_hand, player_total)
+  unless busted?(player_total)
+    dealer_total = dealer_turn(deck, dealer_hand, dealer_total)
+  end
+
+  result = check_result(player_total, dealer_total)
+  show_result(player_total, dealer_total, result)
+  result
 end
 
 def player_turn(deck, player_hand, player_total)
@@ -243,10 +257,11 @@ def play_again?
   repeat_choice.downcase.start_with?('y')
 end
 
+system("clear")
 prompt("Welcome to #{BUST_THRESHOLD}! It's you vs. the dealer. First to " \
        "#{WINNING_SCORE} rounds wins")
 prompt("Dealing first cards...")
-sleep(1)
+sleep(2)
 
 scores = {
   player: 0,
@@ -256,19 +271,12 @@ scores = {
 loop do
   deck = initialise_deck
   player_hand, dealer_hand = deal_first_cards(deck)
-
-  player_total = calculate_hand_value(player_hand)
-  dealer_total = calculate_hand_value(dealer_hand)
+  player_total, dealer_total = calculate_start_totals(player_hand, dealer_hand)
   show_starting_position(player_hand, dealer_hand, player_total)
 
-  player_total = player_turn(deck, player_hand, player_total)
-  unless busted?(player_total)
-    dealer_total = dealer_turn(deck, dealer_hand, dealer_total)
-  end
-
-  result = check_result(player_total, dealer_total)
-  show_result(player_total, dealer_total, result)
+  result = play_game(deck, player_hand, player_total, dealer_hand, dealer_total)
   update_scores(scores, result)
+
   if game_over?(scores)
     show_final_result(scores)
     break unless play_again?
@@ -276,7 +284,9 @@ loop do
   end
 
   prompt('Starting a new round...')
-  sleep(3)
+  sleep(4)
+  system("clear")
 end
 
 prompt("Thanks for playing #{BUST_THRESHOLD}!")
+system("clear")
